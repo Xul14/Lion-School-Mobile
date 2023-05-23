@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">Lion School</string>
+    <string name="name_school">Lion School</string>
+    <string name="welcome">Welcome!</string>
+    <string name="welcome_description">We have a variety of educational programs designed to boost your knowledge and personal development.</string>
+    <string name="button_start">GET START</string>
+    <string name="title_activity_home">HomeActivity</string>
+    <string name="title_activity_alunos">AlunosActivity</string>
 </resources>
