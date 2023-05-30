@@ -6,33 +6,67 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import br.senai.sp.jandira.lionschool.model.Course
+import br.senai.sp.jandira.lionschool.model.CourseList
+import br.senai.sp.jandira.lionschool.model.Students
+import br.senai.sp.jandira.lionschool.model.StudentsList
+import br.senai.sp.jandira.lionschool.service.RetrofitFactory
+import br.senai.sp.jandira.lionschool.service.StudentsService
 import br.senai.sp.jandira.lionschool.ui.theme.LionSchoolTheme
+import coil.compose.AsyncImage
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
-class AlunosActivity : ComponentActivity() {
+class StudentsActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             LionSchoolTheme {
-                studentsScreen()
+
+                val siglaCurso = intent.getStringExtra("sigla")
+                studentsScreen(siglaCurso.toString())
             }
         }
     }
 }
 
+
 @Composable
-fun studentsScreen() {
+fun studentsScreen(curso: String) {
+
+    var listStudents by remember {
+        mutableStateOf(listOf<Students>())
+    }
+
+    val call = RetrofitFactory().getStudentsService().getStudents()
+    call.enqueue(object : Callback<StudentsList> {
+        override fun onResponse(
+            call: Call<StudentsList>,
+            response: Response<StudentsList>
+        ) {
+            listStudents = response.body()!!.alunos
+        }
+
+        override fun onFailure(call: Call<StudentsList>, t: Throwable) {
+            TODO("Not yet implemented")
+        }
+    })
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -82,21 +116,26 @@ fun studentsScreen() {
                     text = "Desenvolvimento de Sistemas",
                     fontWeight = FontWeight.Bold,
                     fontSize = 24.sp,
-                    color = Color.White
+                    color = Color.White,
                 )
 
-                Row() {
+                Spacer(modifier = Modifier.height(28.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                   horizontalArrangement = Arrangement.SpaceBetween
+                ) {
 
                     Button(
                         onClick = { /*TODO*/ },
                         modifier = Modifier
-                            .width( 100.dp)
+                            .width(100.dp)
                             .height(40.dp),
                         shape = RoundedCornerShape(25.dp),
                         colors = ButtonDefaults.buttonColors(Color(229, 182, 87)),
                     ) {
                         Text(
-                            text = "All",
+                            text = stringResource(id = R.string.all_students),
                             fontWeight = FontWeight.Bold,
                             color = Color.White,
                             fontSize = 18.sp
@@ -106,13 +145,13 @@ fun studentsScreen() {
                     Button(
                         onClick = { /*TODO*/ },
                         modifier = Modifier
-                            .width( 100.dp)
+                            .width(115.dp)
                             .height(40.dp),
                         shape = RoundedCornerShape(25.dp),
                         colors = ButtonDefaults.buttonColors(Color(229, 182, 87)),
                     ) {
                         Text(
-                            text = "Studying",
+                            text = stringResource(id = R.string.studying),
                             fontWeight = FontWeight.Bold,
                             color = Color.White,
                             fontSize = 18.sp
@@ -122,13 +161,13 @@ fun studentsScreen() {
                     Button(
                         onClick = { /*TODO*/ },
                         modifier = Modifier
-                            .width( 100.dp)
+                            .width(120.dp)
                             .height(40.dp),
                         shape = RoundedCornerShape(25.dp),
                         colors = ButtonDefaults.buttonColors(Color(229, 182, 87)),
                     ) {
                         Text(
-                            text = "Finalized",
+                            text = stringResource(id = R.string.finalized),
                             fontWeight = FontWeight.Bold,
                             color = Color.White,
                             fontSize = 18.sp
@@ -136,7 +175,40 @@ fun studentsScreen() {
                     }
                 }
 
+                Spacer(modifier = Modifier.height(24.dp))
 
+                LazyColumn(){
+                    items(listStudents){
+                        Card(
+                            modifier = Modifier
+                                .width(300.dp)
+                                .height(200.dp),
+                            backgroundColor = Color(26,40,118)
+                        ) {
+
+                            Column(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                AsyncImage(
+                                    model = it.foto,
+                                    contentDescription = "Student photo",
+                                    modifier = Modifier.size(150.dp)
+                                )
+
+                                Text(
+                                    text = it.nome,
+                                    modifier = Modifier.padding(top = 8.dp),
+                                    fontSize = 18.sp,
+                                    fontWeight =  FontWeight.Bold,
+                                    color = Color.White
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(20.dp))
+                    }
+                }
 
 
 
@@ -145,10 +217,11 @@ fun studentsScreen() {
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun DefaultPreview3() {
-    LionSchoolTheme {
-        studentsScreen()
-    }
-}
+
+//@Preview(showBackground = true)
+//@Composable
+//fun DefaultPreview3() {
+//    LionSchoolTheme {
+//        studentsScreen(curso: String)
+//    }
+//}
