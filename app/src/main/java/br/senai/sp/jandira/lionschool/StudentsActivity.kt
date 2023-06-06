@@ -1,10 +1,13 @@
 package br.senai.sp.jandira.lionschool
 
+import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -14,6 +17,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -40,7 +44,9 @@ class StudentsActivity : ComponentActivity() {
             LionSchoolTheme {
 
                 val siglaCurso = intent.getStringExtra("sigla")
-                studentsScreen(siglaCurso.toString())
+                val nomeCurso = intent.getStringExtra("nome")
+                studentsScreen(siglaCurso.toString(), nomeCurso.toString())
+
             }
         }
     }
@@ -48,19 +54,21 @@ class StudentsActivity : ComponentActivity() {
 
 
 @Composable
-fun studentsScreen(curso: String) {
+fun studentsScreen(curso: String, nomeCurso: String) {
 
     var listStudents by remember {
         mutableStateOf(listOf<Students>())
     }
 
-    val call = RetrofitFactory().getStudentsService().getStudents()
+    var context = LocalContext.current
+
+    val call = RetrofitFactory().getStudentsService().getStudentsByCourse(curso)
     call.enqueue(object : Callback<StudentsList> {
         override fun onResponse(
             call: Call<StudentsList>,
             response: Response<StudentsList>
         ) {
-            listStudents = response.body()!!.alunos
+            listStudents = response.body()!!.curso
         }
 
         override fun onFailure(call: Call<StudentsList>, t: Throwable) {
@@ -113,7 +121,7 @@ fun studentsScreen(curso: String) {
             ) {
 
                 Text(
-                    text = "Desenvolvimento de Sistemas",
+                    text = nomeCurso,
                     fontWeight = FontWeight.Bold,
                     fontSize = 24.sp,
                     color = Color.White,
@@ -179,12 +187,27 @@ fun studentsScreen(curso: String) {
 
                 LazyColumn(){
                     items(listStudents){
+
+                        var backgroundCard = Color(0,0,0)
+
+                        if(it.status == "Finalizado"){
+                            backgroundCard = Color(229, 182, 87)
+                        }else{
+                            backgroundCard = Color(26,40,118)
+                        }
+
                         Card(
                             modifier = Modifier
                                 .width(300.dp)
-                                .height(200.dp),
-                            backgroundColor = Color(26,40,118)
-                        ) {
+                                .height(200.dp)
+                                .clickable {
+                                    var openStudentInfo =
+                                        Intent(context, StudentsActivity::class.java)
+                                    openStudentInfo.putExtra("matricula", it.matricula)
+                                    context.startActivity(openStudentInfo)
+                                },
+                            backgroundColor = backgroundCard
+                        ){
 
                             Column(
                                 modifier = Modifier.fillMaxWidth(),
@@ -200,6 +223,7 @@ fun studentsScreen(curso: String) {
                                     text = it.nome,
                                     modifier = Modifier.padding(top = 8.dp),
                                     fontSize = 18.sp,
+                                    textAlign = TextAlign.Center,
                                     fontWeight =  FontWeight.Bold,
                                     color = Color.White
                                 )

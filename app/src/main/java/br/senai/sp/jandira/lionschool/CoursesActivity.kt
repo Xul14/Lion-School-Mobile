@@ -105,29 +105,6 @@ fun CoursesScreen() {
                     .fillMaxWidth()
             ) {
 
-                OutlinedTextField(
-                    value = courseState,
-                    onValueChange = {courseState = it},
-                    shape = RoundedCornerShape(25.dp),
-                    modifier = Modifier
-                        .height(50.dp)
-                        .width(350.dp),
-                    colors = TextFieldDefaults.outlinedTextFieldColors(
-                        textColor = Color(217, 217, 217),
-                        unfocusedBorderColor = Color(217, 217, 217),
-                        focusedBorderColor = Color(217, 217, 217)
-                    ),
-                    trailingIcon = {
-                        Icon(
-                            painter = painterResource(id = R.drawable.search_icon),
-                            contentDescription = null,
-                            tint = Color(217, 217, 217),
-                            modifier = Modifier
-                                .size(24.dp)
-                        )
-                    }
-                )
-
                 Row(
                     modifier = Modifier.padding(top = 24.dp),
                     horizontalArrangement = Arrangement.Start
@@ -154,10 +131,8 @@ fun CoursesScreen() {
 
                     LazyColumn(){
 
-                        //Cria uma chamada para o endpoint
                         val call = RetrofitFactory().getCoursesService().getCourses()
 
-                        //Executar a chamada
                         call.enqueue(object : Callback<CourseList>{
                             override fun onResponse(
                                 call: Call<CourseList>,
@@ -178,14 +153,11 @@ fun CoursesScreen() {
                                     .height(200.dp)
                                     .padding(bottom = 15.dp)
                                     .clickable {
-                                        var openStudents =
-                                            Intent(context, StudentsActivity::class.java)
+                                        var openStudents = Intent(context, StudentsActivity::class.java)
+                                        openStudents.putExtra("sigla",it.sigla)
+                                        openStudents.putExtra("nome",it.nome)
                                         context.startActivity(openStudents)
 
-                                        openStudents.putExtra("sigla",it.sigla)
-
-                                        courseNamestate = it . sigla
-                                        Log.i("Curso", courseNamestate)
                                     },
                                 backgroundColor = Color.White,
                                 shape = RoundedCornerShape(25.dp)
@@ -231,7 +203,7 @@ fun CoursesScreen() {
                                     )
 
                                     Text(
-                                        text = "Learn to develop web and mobile applications",
+                                        text = it.descricao ,
                                         modifier = Modifier
                                             .width(300.dp)
                                             .padding(top = 10.dp),
