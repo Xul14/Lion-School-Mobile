@@ -18,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -62,6 +63,11 @@ fun studentsScreen(curso: String, nomeCurso: String) {
 
     var context = LocalContext.current
 
+    var listStudentsFilter by remember {
+        mutableStateOf(listOf<Students>())
+    }
+
+
     val call = RetrofitFactory().getStudentsService().getStudentsByCourse(curso)
     call.enqueue(object : Callback<StudentsList> {
         override fun onResponse(
@@ -69,10 +75,11 @@ fun studentsScreen(curso: String, nomeCurso: String) {
             response: Response<StudentsList>
         ) {
             listStudents = response.body()!!.curso
+            listStudentsFilter = response.body()!!.curso
         }
 
         override fun onFailure(call: Call<StudentsList>, t: Throwable) {
-            TODO("Not yet implemented")
+            Log.i("DS2T", "onFailure: ${t.message}")
         }
     })
 
@@ -131,11 +138,11 @@ fun studentsScreen(curso: String, nomeCurso: String) {
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                   horizontalArrangement = Arrangement.SpaceBetween
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
 
                     Button(
-                        onClick = { /*TODO*/ },
+                        onClick = { listStudentsFilter = listStudents },
                         modifier = Modifier
                             .width(100.dp)
                             .height(40.dp),
@@ -151,7 +158,9 @@ fun studentsScreen(curso: String, nomeCurso: String) {
                     }
 
                     Button(
-                        onClick = { /*TODO*/ },
+                        onClick = {
+                            listStudentsFilter = listStudents.filter { it.status == "Cursando" }
+                        },
                         modifier = Modifier
                             .width(115.dp)
                             .height(40.dp),
@@ -167,7 +176,9 @@ fun studentsScreen(curso: String, nomeCurso: String) {
                     }
 
                     Button(
-                        onClick = { /*TODO*/ },
+                        onClick = {
+                            listStudentsFilter = listStudents.filter { it.status == "Finalizado" }
+                        },
                         modifier = Modifier
                             .width(120.dp)
                             .height(40.dp),
@@ -185,15 +196,15 @@ fun studentsScreen(curso: String, nomeCurso: String) {
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                LazyColumn(){
-                    items(listStudents){
+                LazyColumn() {
+                    items(listStudentsFilter) {
 
-                        var backgroundCard = Color(0,0,0)
+                        var backgroundCard = Color(0, 0, 0)
 
-                        if(it.status == "Finalizado"){
+                        if (it.status == "Finalizado") {
                             backgroundCard = Color(229, 182, 87)
-                        }else{
-                            backgroundCard = Color(26,40,118)
+                        } else {
+                            backgroundCard = Color(26, 40, 118)
                         }
 
                         Card(
@@ -202,12 +213,12 @@ fun studentsScreen(curso: String, nomeCurso: String) {
                                 .height(200.dp)
                                 .clickable {
                                     var openStudentInfo =
-                                        Intent(context, StudentsActivity::class.java)
+                                        Intent(context, StudentInfoActivity::class.java)
                                     openStudentInfo.putExtra("matricula", it.matricula)
                                     context.startActivity(openStudentInfo)
                                 },
                             backgroundColor = backgroundCard
-                        ){
+                        ) {
 
                             Column(
                                 modifier = Modifier.fillMaxWidth(),
@@ -224,7 +235,7 @@ fun studentsScreen(curso: String, nomeCurso: String) {
                                     modifier = Modifier.padding(top = 8.dp),
                                     fontSize = 18.sp,
                                     textAlign = TextAlign.Center,
-                                    fontWeight =  FontWeight.Bold,
+                                    fontWeight = FontWeight.Bold,
                                     color = Color.White
                                 )
                             }
@@ -233,9 +244,6 @@ fun studentsScreen(curso: String, nomeCurso: String) {
                         Spacer(modifier = Modifier.height(20.dp))
                     }
                 }
-
-
-
             }
         }
     }

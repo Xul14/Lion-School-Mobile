@@ -5,6 +5,5 @@ data class StudentInfo(
     val nome: String,
     val matricula: String,
     val foto: String,
-    val curso: String,
     val status: String
 )

@@ -1,4 +1,5 @@
 package br.senai.sp.jandira.lionschool.model
 
-class StudentInfoList {
-}
+data class StudentInfoList (
+    val alunos: List<StudentInfo>
+        )
